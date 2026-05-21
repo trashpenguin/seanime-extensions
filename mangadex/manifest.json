@@ -1,0 +1,13 @@
+{
+  "id": "mangadex",
+  "name": "MangaDex",
+  "description": "MangaDex - The world's largest manga scanlation library. Multi-language support.",
+  "version": "1.0.0",
+  "author": "Custom",
+  "type": "manga-provider",
+  "language": "javascript",
+  "lang": "en",
+  "icon": "https://mangadex.org/favicon.ico",
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangadex/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangadex/provider.js"
+}

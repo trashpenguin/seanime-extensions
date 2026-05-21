@@ -1,0 +1,13 @@
+{
+  "id": "mangafire",
+  "name": "MangaFire",
+  "description": "MangaFire - Fast manga site with manga, manhwa and manhua. Bonus replacement for MangaPlus.",
+  "version": "1.0.0",
+  "author": "Custom",
+  "type": "manga-provider",
+  "language": "javascript",
+  "lang": "en",
+  "icon": "https://mangafire.to/favicon.ico",
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/provider.js"
+}

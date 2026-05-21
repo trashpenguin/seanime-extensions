@@ -1,0 +1,13 @@
+{
+  "id": "weebcentral",
+  "name": "WeebCentral",
+  "description": "WeebCentral - Large manga & manhwa source with frequent updates.",
+  "version": "1.0.0",
+  "author": "Custom",
+  "type": "manga-provider",
+  "language": "javascript",
+  "lang": "en",
+  "icon": "https://weebcentral.com/favicon.ico",
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentral/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentral/provider.js"
+}
