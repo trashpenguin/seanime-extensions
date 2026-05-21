@@ -1,8 +1,10 @@
 /// <reference path="./manga-provider.d.ts" />
 
-const BASE = "https://www.natomanga.com"
-
 class Provider {
+
+    constructor() {
+        this.base = "https://www.natomanga.com"
+    }
 
     getSettings() {
         return {
@@ -15,7 +17,7 @@ class Provider {
         return {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Referer": referer || BASE + "/",
+            "Referer": referer || this.base + "/",
         }
     }
 
@@ -30,17 +32,16 @@ class Provider {
     }
 
     async search(opts) {
-        const url = `${BASE}/search/story/${this._encodeQuery(opts.query)}`
-        const res = await fetch(url, { headers: this._headers() })
+        const searchUrl = `${this.base}/search/story/${this._encodeQuery(opts.query)}`
+        const res = await fetch(searchUrl, { headers: this._headers() })
         const html = await res.text()
         const results = []
 
-        // Each result is wrapped in a div.story_item block
+        // Each result is in a div.story_item block
         const blockRegex = /<div[^>]+class="[^"]*story_item[^"]*"[\s\S]*?<\/div>\s*<\/div>/g
         let block
         while ((block = blockRegex.exec(html)) !== null) {
             const chunk = block[0]
-            // href points to absolute URL: https://www.natomanga.com/manga/{slug}
             const linkM = chunk.match(/href="https?:\/\/[^"]*natomanga\.com\/manga\/([^"\/]+)"/)
             if (!linkM) continue
             const imgM = chunk.match(/<img[^>]+src="([^"]+)"/)
@@ -74,70 +75,71 @@ class Provider {
     }
 
     async findChapters(mangaId) {
-        const url = `${BASE}/manga/${mangaId}`
-        const res = await fetch(url, { headers: this._headers() })
+        const pageUrl = `${this.base}/manga/${mangaId}`
+        const res = await fetch(pageUrl, { headers: this._headers() })
         const html = await res.text()
 
         const chapters = []
         const seen = new Set()
         let index = 0
-
-        // Chapter hrefs are RELATIVE: /manga/{slug}/chapter-{num}
-        // Also handle occasional absolute URLs on the same domain
-        const chRegex = /href="((?:https?:\/\/[^"]*natomanga\.com)?\/manga\/[^"\/]+\/chapter-([^"\/\s]+))"/gi
         let m
+
+        // Chapter hrefs can be relative (/manga/{slug}/chapter-N) or absolute
+        const chRegex = /href="((?:https?:\/\/[^"]*natomanga\.com)?\/manga\/[^"\/]+\/chapter-([^"\/\s]+))"/gi
         while ((m = chRegex.exec(html)) !== null) {
-            // Resolve relative URLs to absolute
-            const url = m[1].startsWith("http") ? m[1] : BASE + m[1]
-            if (seen.has(url)) continue
-            seen.add(url)
+            const chapterUrl = m[1].startsWith("http") ? m[1] : this.base + m[1]
+            if (seen.has(chapterUrl)) continue
+            seen.add(chapterUrl)
             const chNum = m[2]
-            // Try to grab the chapter title from the nearby anchor text
-            const titleM = html.slice(m.index, m.index + 200).match(/>[^<]*(?:Chapter|Ch\.?)\s*[\d.]+[^<]*</)
-            const title = titleM ? titleM[0].slice(1, -1).trim() : `Chapter ${chNum}`
-            chapters.push({ id: url, url: url, title: title, chapter: chNum, index: index++ })
+            chapters.push({
+                id: chapterUrl,
+                url: chapterUrl,
+                title: `Chapter ${chNum}`,
+                chapter: chNum,
+                index: index++,
+            })
         }
 
-        // Reverse from newest-first to ascending order
+        // Reverse: site lists newest first, we want ascending
         chapters.reverse()
         for (let i = 0; i < chapters.length; i++) chapters[i].index = i
         return chapters
     }
 
     async findChapterPages(chapterUrl) {
-        const res = await fetch(chapterUrl, { headers: this._headers(BASE + "/") })
+        const res = await fetch(chapterUrl, { headers: this._headers(this.base + "/") })
         const html = await res.text()
         const pages = []
         let m
 
-        // Primary: extract from JS variables (var cdns = [...]; var chapterImages = [...];)
+        // Primary: var cdns = [...]; var chapterImages = [...];
         const cdnsM = html.match(/var\s+cdns\s*=\s*\[([\s\S]*?)\]/)
         const imagesM = html.match(/var\s+chapterImages\s*=\s*\[([\s\S]*?)\]/)
         if (cdnsM && imagesM) {
             const cdns = this._parseJsArray(cdnsM[1])
             const images = this._parseJsArray(imagesM[1])
             if (cdns.length > 0 && images.length > 0) {
-                const base = cdns[0].endsWith("/") ? cdns[0] : cdns[0] + "/"
+                const cdnBase = cdns[0].endsWith("/") ? cdns[0] : cdns[0] + "/"
                 images.forEach((path, i) => {
-                    const clean = path.replace(/^\//, "")
+                    const cleanPath = path.replace(/^\//, "")
                     pages.push({
-                        url: path.startsWith("http") ? path : base + clean,
+                        url: path.startsWith("http") ? path : cdnBase + cleanPath,
                         index: i,
-                        headers: { "Referer": BASE + "/" },
+                        headers: { "Referer": this.base + "/" },
                     })
                 })
                 return pages
             }
         }
 
-        // Fallback A: div.container-chapter-reader > img
+        // Fallback A: div.container-chapter-reader img
         const readerM = html.match(/<div[^>]+class="[^"]*container-chapter-reader[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
         if (readerM) {
             const imgRe = /<img[^>]+src="([^"]+)"/gi
             let idx = 0
             while ((m = imgRe.exec(readerM[1])) !== null) {
                 if (/\.(jpg|jpeg|png|webp)/i.test(m[1])) {
-                    pages.push({ url: m[1], index: idx++, headers: { "Referer": BASE + "/" } })
+                    pages.push({ url: m[1], index: idx++, headers: { "Referer": this.base + "/" } })
                 }
             }
             if (pages.length > 0) return pages
@@ -147,8 +149,7 @@ class Provider {
         const imgRe = /<img[^>]+src="([^"]+)"[^>]*class="[^"]*img-loading[^"]*"|<img[^>]+class="[^"]*img-loading[^"]*"[^>]+src="([^"]+)"/gi
         let idx = 0
         while ((m = imgRe.exec(html)) !== null) {
-            const src = m[1] || m[2]
-            pages.push({ url: src, index: idx++, headers: { "Referer": BASE + "/" } })
+            pages.push({ url: m[1] || m[2], index: idx++, headers: { "Referer": this.base + "/" } })
         }
         return pages
     }
