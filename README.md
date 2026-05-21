@@ -1,80 +1,104 @@
 # My Seanime Extensions
 
-Custom manga provider extensions for Seanime.
+Custom manga provider extensions for [Seanime](https://seanime.rahim.app/).
 
 **Repo:** <https://github.com/trashpenguin/seanime-extensions>
 
+---
+
 ## Included Providers
 
-| Provider     | Source          | Status     | Notes                                        |
-|--------------|-----------------|------------|----------------------------------------------|
-| MangaDex     | mangadex.org    | ✅ Working | Uses official API. Multi-language.           |
-| WeebCentral  | weebcentral.com | ✅ Working | HTML scraper.                                |
-| MangaPill    | mangapill.com   | ✅ Working | Large free manga library. HTML scraper.      |
-| ComicK       | comick.io       | ✅ Working | Uses official API. Manga/manhwa/manhua.      |
+| Provider    | Source          | Type         | Status     | Notes                              |
+|-------------|-----------------|--------------|------------|------------------------------------|
+| MangaDex    | mangadex.org    | Official API | ✅ Working | Most reliable. Multi-language.     |
+| ComicK      | comick.io       | Official API | ✅ Working | Manga/manhwa/manhua. Multi-genre.  |
+| WeebCentral | weebcentral.com | Scraper      | ✅ Working | Large manga & manhwa library.      |
+| MangaPill   | mangapill.com   | Scraper      | ✅ Working | Large free manga library.          |
 
-> ❌ **MangaPlus** (mangaplus.shueisha.co.jp) — Cannot be supported.
-> Their API uses encrypted Protocol Buffers (binary format) with device-based secret keys.
-> It requires compiled native code to decode, which is not possible in Seanime's JS runtime.
-> Official alternative: read MangaPlus directly at https://mangaplus.shueisha.co.jp
-
+> ❌ **MangaPlus** — Cannot be supported. Their API uses encrypted Protocol Buffers with
+> device-based secret keys that require compiled native code to decode — not possible in
+> Seanime's JS runtime. Read MangaPlus directly at <https://mangaplus.shueisha.co.jp>
+>
 > ❌ **Bato.to** — Permanently shut down January 19, 2026 due to legal action.
+>
+> ❌ **MangaKakalot / NatoManga / MangaFire** — Blocked by Cloudflare or inaccessible server-side.
 
 ---
 
 ## How to Install
 
 1. Open **Seanime**
-2. Go to the **Extensions** tab
-3. Click **"Add extensions"**
-4. Paste one of the manifest URLs below and click Add
+2. Go to **Settings → Extensions**
+3. Click **"Add extension"**
+4. Paste a manifest URL from below and click **Add**
 5. Repeat for each provider you want
 
 ### Manifest URLs
 
-**MangaDex:**
+#### MangaDex
 
-`https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangadex/manifest.json`
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangadex/manifest.json
+```
 
-**WeebCentral:**
+#### ComicK
 
-`https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentral/manifest.json`
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json
+```
 
-**MangaPill:**
+#### WeebCentral
 
-`https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json`
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentral/manifest.json
+```
 
-**ComicK:**
+#### MangaPill
 
-`https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json`
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json
+```
+
+---
+
+## Updating Extensions
+
+If a provider stops working after a site update, pull the latest version in Seanime:
+
+1. Go to **Settings → Extensions**
+2. Find the extension and click **Refresh** (or remove and re-add it)
 
 ---
 
 ## Troubleshooting
 
-**"Extension failed to load"**
-- Make sure your manifest.json Raw URLs point to the correct repo file
-- Make sure payloadURI in manifest.json points to the provider.js raw URL
+### Extension failed to load
 
-**"No results found" when searching**
-- WeebCentral and MangaPill are HTML scrapers; if the site changes its layout they may break
-- MangaDex and ComicK are most reliable since they use official APIs
+- Check that the manifest URL is correct and points to a raw GitHub file
+- Make sure `payloadURI` in the manifest points to the correct `provider.js` raw URL
 
-**Chapters not loading**
-- Make sure you're connected to the internet from the Seanime server
-- Some sites may rate-limit or block requests; try again after a minute
+### No results found when searching
 
-**Images not loading**
-- The Referer header must be set correctly — it's already in the code
-- Some CDN servers check referers; this is handled in the providers
+- WeebCentral and MangaPill are HTML scrapers — if the site redesigns, the scraper may break
+- MangaDex and ComicK use official APIs and are the most reliable sources
+
+### Chapters not loading
+
+- Confirm your Seanime server has internet access
+- Some sites rate-limit heavy traffic — wait a minute and try again
+
+### Images not loading
+
+- Referer headers are required by some CDNs and are already set in each provider
+- If images still fail, the source CDN may be temporarily blocking the server's IP
 
 ---
 
 ## Testing Without Hosting
 
-You can test providers directly in Seanime without hosting:
-1. Go to **Extensions** tab in Seanime
-2. Click the **Playground** dropdown
-3. Select **"Manga Provider"**
-4. Paste the contents of `provider.js` directly
-5. Test the `search`, `findChapters`, and `findChapterPages` methods
+Test a provider directly in the Seanime playground without GitHub:
+
+1. Go to **Settings → Extensions → Playground**
+2. Select **"Manga Provider"** from the dropdown
+3. Paste the full contents of `provider.js`
+4. Use the test interface to call `search`, `findChapters`, and `findChapterPages`
