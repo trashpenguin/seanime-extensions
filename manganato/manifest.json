@@ -1,13 +1,13 @@
 {
   "id": "manganato",
-  "name": "MangaKakalot",
-  "description": "MangaKakalot (mangakakalot.gg) - Large free manga reading site with a huge library.",
-  "version": "3.0.0",
+  "name": "MangaPill",
+  "description": "MangaPill (mangapill.com) - Large free manga library with no bot protection.",
+  "version": "4.0.0",
   "author": "Custom",
   "type": "manga-provider",
   "language": "javascript",
   "lang": "en",
-  "icon": "https://www.mangakakalot.gg/favicon.ico",
+  "icon": "https://mangapill.com/favicon.ico",
   "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json",
   "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/provider.js"
 }
