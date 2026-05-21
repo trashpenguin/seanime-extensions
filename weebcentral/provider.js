@@ -2,6 +2,10 @@
 
 class Provider {
 
+    constructor() {
+        this.base = "https://weebcentral.com"
+    }
+
     getSettings() {
         return {
             supportsMultiLanguage: false,
@@ -11,148 +15,136 @@ class Provider {
 
     _headers() {
         return {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Referer": "https://weebcentral.com/",
+            "Referer": this.base + "/",
         }
     }
 
     async search(opts) {
-        const query = encodeURIComponent(opts.query)
-        const url = `https://weebcentral.com/search?text=${query}&limit=20&official=Any&display_mode=Minimal%20Display`
-        const res = await fetch(url, { headers: this._headers() })
-        const html = await res.text()
+        try {
+            var query = (opts && opts.query) ? opts.query : ""
+            if (!query) return []
 
-        const results = []
-        // Match: href="/series/{ULID}/{slug}" patterns
-        const seriesRegex = /href="\/series\/([A-Z0-9]+)\/([^"]+)"/g
-        const imgRegex = /<img[^>]+src="(https:\/\/[^"]+)"/g
-        const titleRegex = /<strong[^>]*>([^<]+)<\/strong>/g
-
-        const ids = []
-        let m
-        while ((m = seriesRegex.exec(html)) !== null) {
-            // deduplicate
-            if (!ids.find(x => x.id === m[1])) {
-                ids.push({ id: m[1], slug: m[2] })
-            }
-        }
-
-        const imgs = []
-        while ((m = imgRegex.exec(html)) !== null) {
-            if (m[1].includes("cover") || m[1].includes("thumb") || m[1].includes("cdn")) {
-                imgs.push(m[1])
-            }
-        }
-
-        const titles = []
-        while ((m = titleRegex.exec(html)) !== null) {
-            const t = m[1].trim()
-            if (t.length > 0 && t.length < 200) titles.push(t)
-        }
-
-        for (let i = 0; i < ids.length; i++) {
-            const { id, slug } = ids[i]
-            const title = titles[i] || slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-            results.push({
-                id: id,
-                title: title,
-                image: imgs[i] || "",
-                synonyms: [],
+            var url = this.base + "/search/data?text=" + encodeURIComponent(query) + "&display_mode=Full+Display"
+            var res = await fetch(url, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Referer": this.base + "/",
+                    "HX-Request": "true",
+                    "HX-Current-URL": this.base + "/",
+                }
             })
-        }
+            var html = await res.text()
 
-        return results
+            var results = []
+            var seen = {}
+            var linkRe = /href="(?:https:\/\/weebcentral\.com)?\/series\/([A-Z0-9]+)\/([^"]+)"/g
+            var m
+
+            while ((m = linkRe.exec(html)) !== null) {
+                var id = m[1]
+                var slug = m[2]
+                if (seen[id]) continue
+                seen[id] = true
+
+                var nearby = html.slice(m.index, m.index + 800)
+
+                var titleM = nearby.match(/class="[^"]*font-black[^"]*line-clamp[^"]*"[^>]*>([^<]+)<\/div>/)
+                var title = titleM ? titleM[1].trim() : slug.replace(/-/g, " ")
+
+                var imgM = nearby.match(/src="(https?:\/\/[^"]+)"/)
+                var image = imgM ? imgM[1] : ""
+
+                results.push({
+                    id: id,
+                    title: title,
+                    image: image,
+                    synonyms: [],
+                })
+            }
+
+            return results
+        } catch (e) {
+            return []
+        }
     }
 
     async findChapters(seriesId) {
-        const url = `https://weebcentral.com/series/${seriesId}/full-chapter-list`
-        const res = await fetch(url, { headers: this._headers() })
-        const html = await res.text()
+        try {
+            var url = this.base + "/series/" + seriesId + "/full-chapter-list"
+            var res = await fetch(url, { headers: this._headers() })
+            var html = await res.text()
 
-        const chapters = []
-        // Match chapter links: href="/chapters/{id}"
-        const chRegex = /href="\/chapters\/([A-Z0-9]+)"[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/g
-        let m
-        let rawIndex = 0
+            var chapters = []
+            var seen = {}
+            var chRe = /href="https:\/\/weebcentral\.com\/chapters\/([A-Z0-9]+)"/g
+            var m
+            var rawIndex = 0
 
-        while ((m = chRegex.exec(html)) !== null) {
-            const chapterId = m[1]
-            const titleText = m[2].trim()
-            const numMatch = titleText.match(/[\d]+(?:\.\d+)?/)
-            const chNum = numMatch ? numMatch[0] : String(rawIndex + 1)
+            while ((m = chRe.exec(html)) !== null) {
+                var chapterId = m[1]
+                if (seen[chapterId]) continue
+                seen[chapterId] = true
 
-            chapters.push({
-                id: chapterId,
-                url: `https://weebcentral.com/chapters/${chapterId}`,
-                title: titleText,
-                chapter: chNum,
-                index: rawIndex++,
-            })
-        }
+                var nearby = html.slice(m.index, m.index + 500)
+                var numM = nearby.match(/Chapter\s+([\d.]+)/)
+                var chNum = numM ? numM[1] : String(rawIndex + 1)
 
-        // Fallback: just grab chapter IDs from links
-        if (chapters.length === 0) {
-            const fallback = /href="\/chapters\/([A-Z0-9]+)"/g
-            while ((m = fallback.exec(html)) !== null) {
-                const chapterId = m[1]
                 chapters.push({
                     id: chapterId,
-                    url: `https://weebcentral.com/chapters/${chapterId}`,
-                    title: `Chapter ${rawIndex + 1}`,
-                    chapter: String(rawIndex + 1),
+                    url: this.base + "/chapters/" + chapterId,
+                    title: "Chapter " + chNum,
+                    chapter: chNum,
                     index: rawIndex++,
                 })
             }
+
+            chapters.reverse()
+            for (var i = 0; i < chapters.length; i++) chapters[i].index = i
+
+            return chapters
+        } catch (e) {
+            return []
         }
-
-        // WeebCentral lists newest first - reverse for ascending order
-        chapters.reverse()
-        for (let i = 0; i < chapters.length; i++) chapters[i].index = i
-
-        return chapters
     }
 
     async findChapterPages(chapterId) {
-        // WeebCentral has a dedicated images endpoint
-        const url = `https://weebcentral.com/chapters/${chapterId}/images?is_prev=False&current_page=1&reading_style=long_strip`
-        const res = await fetch(url, {
-            headers: {
-                ...this._headers(),
-                "Referer": `https://weebcentral.com/chapters/${chapterId}`,
-                "X-Requested-With": "XMLHttpRequest",
-            }
-        })
-        const html = await res.text()
-
-        const pages = []
-        // Match image src/data-src attributes
-        const imgRegex = /<img[^>]+(?:src|data-src)="(https:\/\/[^"]+\.(?:jpg|jpeg|png|webp|avif)[^"]*)"/gi
-        let m
-        let index = 0
-
-        while ((m = imgRegex.exec(html)) !== null) {
-            pages.push({
-                url: m[1],
-                index: index++,
+        try {
+            var url = this.base + "/chapters/" + chapterId + "/images?is_prev=False&current_page=1&reading_style=long_strip"
+            var res = await fetch(url, {
                 headers: {
-                    "Referer": "https://weebcentral.com/",
-                },
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Referer": this.base + "/chapters/" + chapterId,
+                    "HX-Request": "true",
+                    "HX-Current-URL": this.base + "/chapters/" + chapterId,
+                }
             })
-        }
+            var html = await res.text()
 
-        // Fallback: any CDN image URL
-        if (pages.length === 0) {
-            const fallback = /"(https:\/\/cdn[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi
-            while ((m = fallback.exec(html)) !== null) {
+            var pages = []
+            var seen = {}
+            var imgRe = /src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp|avif)[^"]*)"/gi
+            var m
+            var idx = 0
+
+            while ((m = imgRe.exec(html)) !== null) {
+                var imgUrl = m[1]
+                if (seen[imgUrl]) continue
+                if (/\/(logo|icon|avatar|banner|ad)\//i.test(imgUrl)) continue
+                seen[imgUrl] = true
                 pages.push({
-                    url: m[1],
-                    index: index++,
-                    headers: { "Referer": "https://weebcentral.com/" },
+                    url: imgUrl,
+                    index: idx++,
+                    headers: { "Referer": this.base + "/" },
                 })
             }
-        }
 
-        return pages
+            return pages
+        } catch (e) {
+            return []
+        }
     }
 }

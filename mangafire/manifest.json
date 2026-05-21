@@ -1,13 +1,13 @@
 {
   "id": "mangafire",
-  "name": "MangaFire",
-  "description": "MangaFire - Fast manga site with manga, manhwa and manhua. Bonus replacement for MangaPlus.",
-  "version": "1.0.0",
+  "name": "ComicK",
+  "description": "ComicK (comick.io) - Large multi-genre library with official API. Manga/manhwa/manhua.",
+  "version": "2.0.0",
   "author": "Custom",
   "type": "manga-provider",
   "language": "javascript",
   "lang": "en",
-  "icon": "https://mangafire.to/favicon.ico",
+  "icon": "https://comick.io/favicon.ico",
   "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json",
   "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/provider.js"
 }

@@ -6,12 +6,12 @@ Custom manga provider extensions for Seanime.
 
 ## Included Providers
 
-| Provider     | Source          | Status     | Notes                                   |
-|--------------|-----------------|------------|-----------------------------------------|
-| MangaDex     | mangadex.org    | ✅ Working | Uses official API. Multi-language.      |
-| WeebCentral  | weebcentral.com | ✅ Working | HTML scraper.                           |
-| MangaPill    | mangapill.com   | ✅ Working | Large free manga library. HTML scraper. |
-| MangaFire    | mangafire.to    | ✅ Working | Bonus provider. Manga/manhwa/manhua.    |
+| Provider     | Source          | Status     | Notes                                        |
+|--------------|-----------------|------------|----------------------------------------------|
+| MangaDex     | mangadex.org    | ✅ Working | Uses official API. Multi-language.           |
+| WeebCentral  | weebcentral.com | ✅ Working | HTML scraper.                                |
+| MangaPill    | mangapill.com   | ✅ Working | Large free manga library. HTML scraper.      |
+| ComicK       | comick.io       | ✅ Working | Uses official API. Manga/manhwa/manhua.      |
 
 > ❌ **MangaPlus** (mangaplus.shueisha.co.jp) — Cannot be supported.
 > Their API uses encrypted Protocol Buffers (binary format) with device-based secret keys.
@@ -44,7 +44,7 @@ Custom manga provider extensions for Seanime.
 
 `https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json`
 
-**MangaFire:**
+**ComicK:**
 
 `https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json`
 
@@ -57,8 +57,8 @@ Custom manga provider extensions for Seanime.
 - Make sure payloadURI in manifest.json points to the provider.js raw URL
 
 **"No results found" when searching**
-- WeebCentral and MangaNato are HTML scrapers; if the site changes its layout they may break
-- MangaDex is most reliable since it uses an official API
+- WeebCentral and MangaPill are HTML scrapers; if the site changes its layout they may break
+- MangaDex and ComicK are most reliable since they use official APIs
 
 **Chapters not loading**
 - Make sure you're connected to the internet from the Seanime server

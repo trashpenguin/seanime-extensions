@@ -2,7 +2,7 @@
   "id": "weebcentral",
   "name": "WeebCentral",
   "description": "WeebCentral - Large manga & manhwa source with frequent updates.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Custom",
   "type": "manga-provider",
   "language": "javascript",
