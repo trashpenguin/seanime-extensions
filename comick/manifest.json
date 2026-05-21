@@ -1,5 +1,5 @@
 {
-  "id": "mangafire",
+  "id": "comick",
   "name": "ComicK",
   "description": "ComicK (comick.io) - Large multi-genre library with official API. Manga/manhwa/manhua.",
   "version": "2.0.0",
@@ -8,6 +8,6 @@
   "language": "javascript",
   "lang": "en",
   "icon": "https://comick.io/favicon.ico",
-  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json",
-  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/provider.js"
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/comick/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/comick/provider.js"
 }

@@ -1,5 +1,5 @@
 {
-  "id": "manganato",
+  "id": "mangapill",
   "name": "MangaPill",
   "description": "MangaPill (mangapill.com) - Large free manga library with no bot protection.",
   "version": "4.0.0",
@@ -8,6 +8,6 @@
   "language": "javascript",
   "lang": "en",
   "icon": "https://mangapill.com/favicon.ico",
-  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json",
-  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/provider.js"
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangapill/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangapill/provider.js"
 }

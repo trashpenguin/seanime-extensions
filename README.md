@@ -48,7 +48,7 @@ https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangadex/
 ### ComicK
 
 ```text
-https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangafire/manifest.json
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/comick/manifest.json
 ```
 
 ### WeebCentral
@@ -60,7 +60,7 @@ https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentr
 ### MangaPill
 
 ```text
-https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangapill/manifest.json
 ```
 
 ---
@@ -114,13 +114,10 @@ Test a provider directly in Seanime without needing GitHub or a public URL:
 
 ## Repository Structure
 
-```
+```text
 seanime-extensions/
-├── mangadex/          # MangaDex provider (official API)
-├── mangafire/         # ComicK provider (official API)
-├── weebcentral/       # WeebCentral provider (scraper)
-└── manganato/         # MangaPill provider (scraper)
+├── mangadex/      # MangaDex provider (official API)
+├── comick/        # ComicK provider (official API)
+├── weebcentral/   # WeebCentral provider (scraper)
+└── mangapill/     # MangaPill provider (scraper)
 ```
-
-> Note: The `mangafire/` and `manganato/` folder names are legacy — they contain the
-> ComicK and MangaPill providers respectively. The manifest URLs above are correct.
