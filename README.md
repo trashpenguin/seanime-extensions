@@ -30,15 +30,6 @@ that may not be on MangaDex.
 **MangaPill** — HTML scraper. Large free library. Good fallback for titles missing
 from the API-based sources.
 
-### Unsupported Sources
-
-| Source | Reason |
-| --- | --- |
-| MangaPlus | API uses encrypted Protocol Buffers with device-bound secret keys — requires native code |
-| Bato.to | Shut down permanently on January 19, 2026 due to legal action |
-| MangaFire | Blocks all server-side requests via Cloudflare |
-| MangaKakalot | Blocks all server-side requests via Cloudflare |
-
 ---
 
 ## Installation
