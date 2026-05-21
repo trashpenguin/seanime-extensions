@@ -6,12 +6,12 @@ Custom manga provider extensions for Seanime.
 
 ## Included Providers
 
-| Provider    | Source               | Status      | Notes                              |
-|-------------|----------------------|-------------|-------------------------------------|
-| MangaDex    | mangadex.org         | ✅ Working  | Uses official API. Multi-language.  |
-| WeebCentral | weebcentral.com      | ✅ Working  | HTML scraper.                        |
-| NatoManga   | natomanga.com        | ✅ Working  | MangaNato successor. HTML scraper.   |
-| MangaFire   | mangafire.to         | ✅ Working  | Bonus provider. Manga/manhwa/manhua. |
+| Provider     | Source          | Status     | Notes                                   |
+|--------------|-----------------|------------|-----------------------------------------|
+| MangaDex     | mangadex.org    | ✅ Working | Uses official API. Multi-language.      |
+| WeebCentral  | weebcentral.com | ✅ Working | HTML scraper.                           |
+| MangaKakalot | mangakakalot.gg | ✅ Working | Large free manga library. HTML scraper. |
+| MangaFire    | mangafire.to    | ✅ Working | Bonus provider. Manga/manhwa/manhua.    |
 
 > ❌ **MangaPlus** (mangaplus.shueisha.co.jp) — Cannot be supported.
 > Their API uses encrypted Protocol Buffers (binary format) with device-based secret keys.
@@ -40,7 +40,7 @@ Custom manga provider extensions for Seanime.
 
 `https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentral/manifest.json`
 
-**MangaNato:**
+**MangaKakalot:**
 
 `https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json`
 

@@ -3,7 +3,7 @@
 class Provider {
 
     constructor() {
-        this.base = "https://www.natomanga.com"
+        this.base = "https://www.mangakakalot.gg"
     }
 
     getSettings() {
@@ -42,16 +42,13 @@ class Provider {
             var html = await res.text()
             var results = []
 
-            // Split page by story_item blocks (simpler and more reliable than full div match)
             var blockRegex = /class="story_item[^"]*"([\s\S]*?)(?=class="story_item|<\/body|$)/g
             var block
             while ((block = blockRegex.exec(html)) !== null) {
                 var chunk = block[1]
-                // href uses absolute URL: https://www.natomanga.com/manga/{slug}
-                var linkM = chunk.match(/href="https?:\/\/[^"]*natomanga\.com\/manga\/([^"\/\s]+)"/)
+                var linkM = chunk.match(/href="https?:\/\/[^"]*mangakakalot\.gg\/manga\/([^"\/\s]+)"/)
                 if (!linkM) continue
                 var imgM = chunk.match(/src="(https?:\/\/[^"]+)"/)
-                // Title is in <h3 class="story_name"> or similar
                 var titleM = chunk.match(/class="story_name[^"]*"[^>]*>[\s\S]*?<a[^>]*>([^<]+)<\/a>/) ||
                              chunk.match(/<h3[^>]*>[\s\S]*?<a[^>]*>([^<]+)<\/a>/) ||
                              chunk.match(/class="h3_[^"]*"[^>]*>([^<]+)/)
@@ -64,9 +61,8 @@ class Provider {
                 })
             }
 
-            // Fallback: just grab every natomanga manga link from the page
             if (results.length === 0) {
-                var linkRe = /href="https?:\/\/[^"]*natomanga\.com\/manga\/([a-z0-9][a-z0-9-]*)"/gi
+                var linkRe = /href="https?:\/\/[^"]*mangakakalot\.gg\/manga\/([a-z0-9][a-z0-9-]*)"/gi
                 var titleRe = /class="story_name[^"]*"[^>]*>[\s\S]*?<a[^>]*>([^<]+)<\/a>/g
                 var imgRe2 = /src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi
                 var ids = [], titles = [], imgs = [], lm, tm, im
@@ -95,8 +91,7 @@ class Provider {
             var index = 0
             var m
 
-            // Chapter hrefs: relative /manga/{slug}/chapter-N or absolute https://...natomanga.com/...
-            var chRegex = /href="((?:https?:\/\/[^"]*natomanga\.com)?\/manga\/[^"\/]+\/chapter-([^"\/\s]+))"/gi
+            var chRegex = /href="((?:https?:\/\/[^"]*mangakakalot\.gg)?\/manga\/[^"\/]+\/chapter-([^"\/\s]+))"/gi
             while ((m = chRegex.exec(html)) !== null) {
                 var chapterUrl = (m[1].indexOf("http") === 0) ? m[1] : (this.base + m[1])
                 if (seen[chapterUrl]) continue
@@ -110,7 +105,6 @@ class Provider {
                 })
             }
 
-            // Reverse: site lists newest first
             chapters.reverse()
             for (var j = 0; j < chapters.length; j++) chapters[j].index = j
             return chapters
@@ -126,7 +120,6 @@ class Provider {
             var pages = []
             var m
 
-            // Primary: var cdns = [...]; var chapterImages = [...];
             var cdnsM = html.match(/var\s+cdns\s*=\s*\[([\s\S]*?)\]/)
             var imagesM = html.match(/var\s+chapterImages\s*=\s*\[([\s\S]*?)\]/)
             if (cdnsM && imagesM) {
@@ -147,7 +140,6 @@ class Provider {
                 }
             }
 
-            // Fallback A: div.container-chapter-reader img
             var readerM = html.match(/<div[^>]+class="[^"]*container-chapter-reader[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
             if (readerM) {
                 var imgRe = /<img[^>]+src="([^"]+)"/gi
@@ -160,7 +152,6 @@ class Provider {
                 if (pages.length > 0) return pages
             }
 
-            // Fallback B: img-loading class
             var imgRe2 = /<img[^>]+class="[^"]*img-loading[^"]*"[^>]+src="([^"]+)"|<img[^>]+src="([^"]+)"[^>]*class="[^"]*img-loading[^"]*"/gi
             var idx2 = 0
             while ((m = imgRe2.exec(html)) !== null) {
