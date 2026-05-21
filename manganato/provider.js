@@ -11,9 +11,10 @@ class Provider {
 
     _headers(referer) {
         return {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Referer": referer || "https://manganato.com/",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": referer || "https://www.natomanga.com/",
         }
     }
 
@@ -27,20 +28,21 @@ class Provider {
 
     async search(opts) {
         const encoded = this._encodeQuery(opts.query)
-        const url = `https://manganato.com/search/story/${encoded}`
+        const url = `https://www.natomanga.com/search/story/${encoded}`
         const res = await fetch(url, { headers: this._headers() })
         const html = await res.text()
 
         const results = []
 
-        // Primary pattern: story item blocks
+        // Primary: story_item blocks
         const blockRegex = /class="story_item[^"]*"([\s\S]*?)(?=class="story_item|$)/g
         let block
         while ((block = blockRegex.exec(html)) !== null) {
             const chunk = block[1]
-            const linkM = chunk.match(/href="(https:\/\/manganato\.com\/manga-([a-z0-9]+))"/)
+            const linkM = chunk.match(/href="(https:\/\/(?:www\.)?natomanga\.com\/manga\/([a-z0-9][a-z0-9-]*))"/)
             const imgM = chunk.match(/src="(https:\/\/[^"]+)"/)
-            const titleM = chunk.match(/class="h3_[^"]*"[^>]*>([^<]+)/)
+            const titleM = chunk.match(/class="(?:h3_[^"]*|story_name[^"]*)"[^>]*>([^<]+)/) ||
+                           chunk.match(/<h3[^>]*>[\s\S]*?<a[^>]*>([^<]+)/)
 
             if (linkM && titleM) {
                 results.push({
@@ -52,11 +54,11 @@ class Provider {
             }
         }
 
-        // Fallback: simpler patterns
+        // Fallback: flat regex scan
         if (results.length === 0) {
-            const linkRe = /href="https:\/\/manganato\.com\/manga-([a-z0-9]+)"/g
-            const titleRe = /class="h3_[^"]*"[^>]*>([^<]+)</g
-            const imgRe = /<img[^>]+src="(https:\/\/s\d+\.mkklcdnv6tempv3[^"]+|https:\/\/[^"]+\.(?:jpg|jpeg|png)[^"]*)"/g
+            const linkRe = /href="https:\/\/(?:www\.)?natomanga\.com\/manga\/([a-z0-9][a-z0-9-]*)"/g
+            const titleRe = /class="(?:h3_[^"]*|story_name[^"]*)"[^>]*>([^<]+)</g
+            const imgRe = /<img[^>]+src="(https:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/g
 
             const ids = [], titles = [], imgs = []
             let m
@@ -78,47 +80,46 @@ class Provider {
     }
 
     async findChapters(mangaId) {
-        // MangaNato series page: https://manganato.com/manga-{id}
-        const url = `https://manganato.com/manga-${mangaId}`
+        const url = `https://www.natomanga.com/manga/${mangaId}`
         const res = await fetch(url, { headers: this._headers() })
         const html = await res.text()
 
         const chapters = []
-
-        // Chapter links pattern on MangaNato:
-        // href="https://chapmanganato.to/manga-{id}/chapter-{num}"
-        const chRegex = /href="(https:\/\/chapmanganato\.to\/manga-[^\/]+\/chapter-([^"\/\s]+))"[^>]*>[\s\S]*?<span class="chapter-name[^"]*"[^>]*>([^<]+)<\/span>/g
         let m
         let index = 0
 
+        // Primary: match chapter links with inline anchor text for title
+        const chRegex = /href="(https:\/\/(?:www\.)?natomanga\.com\/manga\/[^\/]+\/chapter-([^"\/\s]+))"[^>]*>\s*([^<]*)/g
         while ((m = chRegex.exec(html)) !== null) {
-            chapters.push({
-                id: m[1], // full URL used as chapter ID
-                url: m[1],
-                title: m[3].trim(),
-                chapter: m[2],
-                index: index++,
-            })
+            const title = m[3].trim() || `Chapter ${m[2]}`
+            if (!chapters.find(c => c.id === m[1])) {
+                chapters.push({
+                    id: m[1],
+                    url: m[1],
+                    title: title,
+                    chapter: m[2],
+                    index: index++,
+                })
+            }
         }
 
-        // Fallback: just grab all chapter URLs
+        // Fallback: just grab chapter URLs
         if (chapters.length === 0) {
-            const re = /href="(https:\/\/chapmanganato\.to\/manga-[^\/]+\/chapter-([^"\/\s]+))"/g
+            const re = /href="(https:\/\/(?:www\.)?natomanga\.com\/manga\/[^\/]+\/chapter-([^"\/\s]+))"/g
             while ((m = re.exec(html)) !== null) {
-                const chNum = m[2]
                 if (!chapters.find(c => c.id === m[1])) {
                     chapters.push({
                         id: m[1],
                         url: m[1],
-                        title: `Chapter ${chNum}`,
-                        chapter: chNum,
+                        title: `Chapter ${m[2]}`,
+                        chapter: m[2],
                         index: index++,
                     })
                 }
             }
         }
 
-        // Newest listed first on MangaNato - reverse to ascending
+        // Site lists newest first — reverse to ascending order
         chapters.reverse()
         for (let i = 0; i < chapters.length; i++) chapters[i].index = i
 
@@ -126,38 +127,34 @@ class Provider {
     }
 
     async findChapterPages(chapterUrl) {
-        // chapterUrl is the full URL like https://chapmanganato.to/manga-{id}/chapter-{num}
         const res = await fetch(chapterUrl, {
-            headers: this._headers("https://manganato.com/")
+            headers: this._headers("https://www.natomanga.com/")
         })
         const html = await res.text()
 
         const pages = []
-
-        // MangaNato chapter images: <img class="img-loading" src="..." ...>
-        const imgRe = /<img[^>]+class="[^"]*img-loading[^"]*"[^>]+src="([^"]+)"/g
         let m
         let index = 0
 
+        // class before src
+        const imgRe = /<img[^>]+class="[^"]*img-loading[^"]*"[^>]+src="([^"]+)"/g
         while ((m = imgRe.exec(html)) !== null) {
-            pages.push({
-                url: m[1],
-                index: index++,
-                headers: {
-                    "Referer": "https://chapmanganato.to/",
-                },
-            })
+            pages.push({ url: m[1], index: index++, headers: { "Referer": "https://www.natomanga.com/" } })
         }
 
-        // Fallback: any CDN image
+        // src before class
+        if (pages.length === 0) {
+            const imgRe2 = /<img[^>]+src="([^"]+)"[^>]+class="[^"]*img-loading[^"]*"/g
+            while ((m = imgRe2.exec(html)) !== null) {
+                pages.push({ url: m[1], index: index++, headers: { "Referer": "https://www.natomanga.com/" } })
+            }
+        }
+
+        // Fallback: CDN image URLs
         if (pages.length === 0) {
             const fallback = /src="(https:\/\/s\d+\.[^"]+\.(?:jpg|jpeg|png|webp))"/g
             while ((m = fallback.exec(html)) !== null) {
-                pages.push({
-                    url: m[1],
-                    index: index++,
-                    headers: { "Referer": "https://chapmanganato.to/" },
-                })
+                pages.push({ url: m[1], index: index++, headers: { "Referer": "https://www.natomanga.com/" } })
             }
         }
 

@@ -1,13 +1,13 @@
 {
   "id": "manganato",
-  "name": "MangaNato",
-  "description": "MangaNato (Manganato.com) - Large free manga reading site with a huge library.",
-  "version": "1.0.0",
+  "name": "NatoManga",
+  "description": "NatoManga (natomanga.com) - Successor to MangaNato. Large free manga reading site with a huge library.",
+  "version": "2.0.0",
   "author": "Custom",
   "type": "manga-provider",
   "language": "javascript",
   "lang": "en",
-  "icon": "https://manganato.com/favicon.ico",
+  "icon": "https://www.natomanga.com/favicon.ico",
   "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/manifest.json",
   "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/manganato/provider.js"
 }

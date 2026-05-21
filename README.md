@@ -10,7 +10,7 @@ Custom manga provider extensions for Seanime.
 |-------------|----------------------|-------------|-------------------------------------|
 | MangaDex    | mangadex.org         | ✅ Working  | Uses official API. Multi-language.  |
 | WeebCentral | weebcentral.com      | ✅ Working  | HTML scraper.                        |
-| MangaNato   | manganato.com        | ✅ Working  | HTML scraper.                        |
+| NatoManga   | natomanga.com        | ✅ Working  | MangaNato successor. HTML scraper.   |
 | MangaFire   | mangafire.to         | ✅ Working  | Bonus provider. Manga/manhwa/manhua. |
 
 > ❌ **MangaPlus** (mangaplus.shueisha.co.jp) — Cannot be supported.
