@@ -15,6 +15,8 @@ Custom manga provider extensions for [Seanime](https://seanime.rahim.app/) — a
 | ComicK      | comick.io       | Official API | 2.0.0   | ✅ Working |
 | WeebCentral | weebcentral.com | Scraper      | 1.1.0   | ✅ Working |
 | MangaPill   | mangapill.com   | Scraper      | 4.0.0   | ✅ Working |
+| MangaKatana | mangakatana.com | Scraper      | 1.0.0   | Live smoke check passed; verify in Seanime |
+| Atsumaru    | atsu.moe        | Site JSON API | 1.0.0  | Live smoke check passed; verify in Seanime |
 
 ### Provider Details
 
@@ -31,6 +33,20 @@ that may not be on MangaDex.
 
 **MangaPill** — HTML scraper. Large free library. Good fallback for titles missing
 from the API-based sources.
+
+**MangaKatana** — English manga provider. Supports search result cards and
+single-result redirects, filters chapters to the selected series, and reads page
+URLs from the site's reader data without executing its scripts.
+
+**Atsumaru** — English manga provider for atsu.moe. Uses the site's JSON endpoints
+for search, chapter lists and reader pages. Returns chapters and pages in numeric
+reading order. These endpoints are not a documented public API and may change.
+
+Both new providers report request and parsing failures as errors. Their live smoke
+checks covered Naruto search and chapter lists, sample reader page lists and image
+retrieval on October 14, 2026. MangaKatana also produced intermittent connection
+timeouts during verification; retry if the site is temporarily unreachable.
+Playback inside Seanime has not been verified.
 
 ---
 
@@ -65,6 +81,18 @@ https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/weebcentr
 https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangapill/manifest.json
 ```
 
+### MangaKatana
+
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangakatana/manifest.json
+```
+
+### Atsumaru
+
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/atsumaru/manifest.json
+```
+
 ---
 
 ## Updating
@@ -88,7 +116,8 @@ If Refresh doesn't work, remove the extension and re-add it using the same manif
 ### No results when searching
 
 - MangaDex and ComicK use official APIs — they are the most stable
-- WeebCentral and MangaPill are HTML scrapers — a site redesign can break them temporarily
+- WeebCentral, MangaPill and MangaKatana are HTML scrapers — a site redesign can break them temporarily
+- Atsumaru uses the site's JSON endpoints; endpoint changes can also break the provider
 - Open an [issue](https://github.com/trashpenguin/seanime-extensions/issues) if a scraper is broken
 
 ### Chapters not loading
@@ -113,9 +142,10 @@ With Node.js 22 or newer, run:
 npm test
 ```
 
-No dependencies or installation step are required. The tests check all four manifests
-and provider interfaces, plus MangaDex search, pagination, duplicate chapters, page
-URLs and error handling using mocked API responses. GitHub Actions runs the same
+No dependencies or installation step are required. The tests discover all provider
+manifests automatically and check their interfaces. They also cover MangaDex,
+MangaKatana and Atsumaru search, chapter ordering, duplicate records, page URLs and
+error handling using mocked responses. GitHub Actions runs the same
 checks on pushes and pull requests. These checks do not verify live source availability
 or execution inside Seanime; use the Playground for those checks.
 
@@ -137,5 +167,14 @@ seanime-extensions/
 ├── mangadex/      # MangaDex provider (official API)
 ├── comick/        # ComicK provider (official API)
 ├── weebcentral/   # WeebCentral provider (scraper)
-└── mangapill/     # MangaPill provider (scraper)
+├── mangapill/     # MangaPill provider (scraper)
+├── mangakatana/   # MangaKatana provider (scraper)
+├── atsumaru/      # Atsumaru provider (site JSON API)
+└── tests/         # Offline provider checks
 ```
+
+## Credits
+
+Endpoint conventions for the MangaKatana and Atsumaru adapters were based on
+[Seanime-contributions/Seanime-Providers](https://github.com/Seanime-contributions/Seanime-Providers).
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the upstream MIT license.

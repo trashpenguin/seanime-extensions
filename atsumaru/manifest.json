@@ -1,0 +1,13 @@
+{
+  "id": "atsumaru",
+  "name": "Atsumaru",
+  "description": "English manga search, chapters and reader pages from Atsumaru (atsu.moe).",
+  "version": "1.0.0",
+  "author": "trashpenguin",
+  "type": "manga-provider",
+  "language": "javascript",
+  "lang": "en",
+  "icon": "https://atsu.moe/favicon.ico",
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/atsumaru/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/atsumaru/provider.js"
+}

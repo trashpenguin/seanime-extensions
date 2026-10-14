@@ -5,7 +5,7 @@ const path = require('node:path')
 const vm = require('node:vm')
 
 const root = path.join(__dirname, '..')
-const providers = ['mangadex', 'comick', 'weebcentral', 'mangapill']
+const providers = fs.readdirSync(root).filter(name => fs.existsSync(path.join(root, name, 'manifest.json')))
 function loadProvider(name, fetch) {
     const source = fs.readFileSync(path.join(root, name, 'provider.js'), 'utf8')
     return vm.runInNewContext(source + '\nnew Provider()', { fetch })
