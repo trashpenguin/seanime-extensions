@@ -1,6 +1,8 @@
 # Seanime Manga Extensions
 
-Custom manga provider extensions for [Seanime](https://seanime.rahim.app/) — a self-hosted anime and manga manager.
+One installable manga collection for [Seanime](https://seanime.rahim.app/) — a self-hosted anime and manga manager.
+It bundles MangaDex, ComicK, WeebCentral, MangaPill, MangaKatana and Atsumaru.
+The individual source extensions are also available.
 
 > Extensions are JavaScript plugins that let Seanime fetch manga chapters and pages from external sources.
 > All providers run server-side inside Seanime's JS runtime.
@@ -12,7 +14,7 @@ Custom manga provider extensions for [Seanime](https://seanime.rahim.app/) — a
 | Provider    | Source          | Type         | Version | Status     |
 |-------------|-----------------|--------------|---------|------------|
 | MangaDex    | mangadex.org    | Official API | 1.0.1   | ✅ Working |
-| ComicK      | comick.io       | Official API | 2.0.0   | ✅ Working |
+| ComicK      | comick.io       | Official API | 2.0.0   | Configured API returned HTTP 404 during collection verification |
 | WeebCentral | weebcentral.com | Scraper      | 1.1.0   | ✅ Working |
 | MangaPill   | mangapill.com   | Scraper      | 4.0.0   | ✅ Working |
 | MangaKatana | mangakatana.com | Scraper      | 1.0.0   | Live smoke check passed; verify in Seanime |
@@ -25,8 +27,9 @@ chapters. Multiple scanlation groups may appear, but language and scanlator sele
 are not supported. External chapters are omitted because MangaDex does not host their pages.
 API failures are reported as errors so they can be distinguished from empty results.
 
-**ComicK** — Uses the official ComicK API. Excellent coverage of manga, manhwa, and
-manhua. Good alternative when MangaDex is slow or missing a title.
+**ComicK** — Uses the configured ComicK API. Its search endpoint returned HTTP 404
+during collection verification on October 14, 2026. The adapter remains bundled,
+but the collection skips it when its API fails.
 
 **WeebCentral** — HTML scraper. Large library with frequent updates. Good for manhwa
 that may not be on MangaDex.
@@ -52,10 +55,44 @@ Playback inside Seanime has not been verified.
 
 ## Installation
 
+### Manga Collection — all six sources in one extension
+
 1. Open **Seanime** and go to **Settings → Extensions**
 2. Click **Add extension**
-3. Paste one of the manifest URLs below and click **Add**
-4. Repeat for each provider you want
+3. Paste this manifest URL and click **Add**:
+
+```text
+https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/collection/manifest.json
+```
+
+4. Open a manga and select **Manga Collection** as its provider.
+5. Open **Manual match**, search the title, and select the result labelled with the
+   source you want, such as `Naruto [MangaKatana]` or `Naruto [Atsumaru]`. Confirm
+   the match to use that source for this manga.
+
+You only need to install the collection extension to use all six sources. Every
+search queries them in parallel. Results from different sources stay separate,
+and chapters and page requests go to the selected source. Original manga titles
+are retained as synonyms for Seanime's automatic matching; use **Manual match**
+to make an explicit source choice or switch sources later.
+
+An unavailable source is logged and skipped during search. If all sources fail,
+the collection reports an error. Requests use a 15-second timeout in Seanime.
+Switching sources requires a new manual match; reader pages are never automatically
+mixed across sources. Refresh **Manga Collection** to update all bundled adapters.
+
+The live collection smoke check returned 104 Naruto search results from five
+sources on October 14, 2026; ComicK returned HTTP 404 and was skipped. Selecting
+the Atsumaru result returned 701 chapters, 59 pages for chapter 1, and an image
+with HTTP 200. This verifies the bundled routing using Node.js, not playback in
+Seanime; use the Playground to check that runtime.
+
+The collection introduces its own manga and chapter IDs. Installing it does not
+migrate existing individual-provider mappings or downloaded chapters.
+
+### Individual sources (optional)
+
+To install only a specific source, paste its manifest URL below into **Add extension**.
 
 ### MangaDex
 
@@ -149,6 +186,25 @@ error handling using mocked responses. GitHub Actions runs the same
 checks on pushes and pull requests. These checks do not verify live source availability
 or execution inside Seanime; use the Playground for those checks.
 
+Collection tests exercise the standalone bundle with the real embedded adapters,
+including parallel search, source labels, failure isolation, ID encoding and routing.
+`npm test` also rejects a bundle that is out of date with its adapter sources.
+
+### Rebuilding the collection
+
+After editing an individual `provider.js`, `collection/router.js`, or the bundled
+source list in `collection/sources.json`, regenerate the installable file:
+
+```sh
+npm run build:collection
+npm test
+```
+
+Commit the updated `collection/provider.js` along with your source changes. The
+bundle embeds every adapter, so it runs without fetching or evaluating provider
+code at runtime. When releasing changes, bump `collection/manifest.json` as well
+as any changed individual source's version.
+
 ### Seanime Playground
 
 Test a provider directly in Seanime without needing GitHub or a public URL:
@@ -164,12 +220,14 @@ Test a provider directly in Seanime without needing GitHub or a public URL:
 
 ```text
 seanime-extensions/
+├── collection/    # Single installable extension bundling all six sources
 ├── mangadex/      # MangaDex provider (official API)
 ├── comick/        # ComicK provider (official API)
 ├── weebcentral/   # WeebCentral provider (scraper)
 ├── mangapill/     # MangaPill provider (scraper)
 ├── mangakatana/   # MangaKatana provider (scraper)
 ├── atsumaru/      # Atsumaru provider (site JSON API)
+├── scripts/       # Collection bundle generator
 └── tests/         # Offline provider checks
 ```
 

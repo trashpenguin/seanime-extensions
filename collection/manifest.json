@@ -1,0 +1,14 @@
+{
+  "id": "collection",
+  "name": "Manga Collection",
+  "description": "One extension with MangaDex, ComicK, WeebCentral, MangaPill, MangaKatana and Atsumaru. Choose a source from labelled search results.",
+  "version": "1.0.0",
+  "author": "trashpenguin",
+  "type": "manga-provider",
+  "language": "javascript",
+  "lang": "en",
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/collection/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/collection/provider.js",
+  "readme": "https://github.com/trashpenguin/seanime-extensions/blob/main/README.md",
+  "notes": "Use Seanime's manual manga matching/search to choose a result labelled with the desired source. Individual source extensions are optional. Refresh this extension to update all bundled adapters."
+}
