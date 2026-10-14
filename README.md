@@ -11,15 +11,17 @@ Custom manga provider extensions for [Seanime](https://seanime.rahim.app/) — a
 
 | Provider    | Source          | Type         | Version | Status     |
 |-------------|-----------------|--------------|---------|------------|
-| MangaDex    | mangadex.org    | Official API | 1.0.0   | ✅ Working |
+| MangaDex    | mangadex.org    | Official API | 1.0.1   | ✅ Working |
 | ComicK      | comick.io       | Official API | 2.0.0   | ✅ Working |
 | WeebCentral | weebcentral.com | Scraper      | 1.1.0   | ✅ Working |
 | MangaPill   | mangapill.com   | Scraper      | 4.0.0   | ✅ Working |
 
 ### Provider Details
 
-**MangaDex** — Best overall reliability. Uses the official MangaDex API. Supports
-multiple languages and scanlation groups. Covers virtually all popular manga titles.
+**MangaDex** — Uses the official MangaDex API to search manga and fetch English
+chapters. Multiple scanlation groups may appear, but language and scanlator selection
+are not supported. External chapters are omitted because MangaDex does not host their pages.
+API failures are reported as errors so they can be distinguished from empty results.
 
 **ComicK** — Uses the official ComicK API. Excellent coverage of manga, manhwa, and
 manhua. Good alternative when MangaDex is slow or missing a title.
@@ -102,6 +104,22 @@ If Refresh doesn't work, remove the extension and re-add it using the same manif
 ---
 
 ## Testing
+
+### Automated checks
+
+With Node.js 22 or newer, run:
+
+```sh
+npm test
+```
+
+No dependencies or installation step are required. The tests check all four manifests
+and provider interfaces, plus MangaDex search, pagination, duplicate chapters, page
+URLs and error handling using mocked API responses. GitHub Actions runs the same
+checks on pushes and pull requests. These checks do not verify live source availability
+or execution inside Seanime; use the Playground for those checks.
+
+### Seanime Playground
 
 Test a provider directly in Seanime without needing GitHub or a public URL:
 
