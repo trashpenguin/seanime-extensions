@@ -2,7 +2,9 @@
   "name": "seanime-extensions",
   "private": true,
   "scripts": {
-    "test": "node --test"
+    "build:collection": "node scripts/build-collection.js",
+    "check:collection": "node scripts/build-collection.js --check",
+    "test": "npm run check:collection && node --test"
   },
   "engines": {
     "node": ">=22"
