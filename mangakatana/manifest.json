@@ -1,0 +1,13 @@
+{
+  "id": "mangakatana",
+  "name": "MangaKatana",
+  "description": "English manga search, chapters and reader pages from MangaKatana.",
+  "version": "1.0.0",
+  "author": "trashpenguin",
+  "type": "manga-provider",
+  "language": "javascript",
+  "lang": "en",
+  "icon": "https://mangakatana.com/favicon.ico",
+  "manifestURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangakatana/manifest.json",
+  "payloadURI": "https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangakatana/provider.js"
+}
