@@ -1,8 +1,8 @@
 {
   "id": "mangadex",
   "name": "MangaDex",
-  "description": "MangaDex - The world's largest manga scanlation library. Multi-language support.",
-  "version": "1.0.0",
+  "description": "MangaDex - Manga search and English chapters via the official API.",
+  "version": "1.0.1",
   "author": "Custom",
   "type": "manga-provider",
   "language": "javascript",
