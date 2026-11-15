@@ -1,7 +1,7 @@
 # Seanime Manga Extensions
 
 One installable manga collection for [Seanime](https://seanime.rahim.app/) — a self-hosted anime and manga manager.
-It bundles MangaDex, ComicK, WeebCentral, MangaPill, MangaKatana and Atsumaru.
+It bundles MangaDex, WeebCentral, MangaPill, MangaKatana and Atsumaru.
 The individual source extensions are also available.
 
 > Extensions are JavaScript plugins that let Seanime fetch manga chapters and pages from external sources.
@@ -14,7 +14,7 @@ The individual source extensions are also available.
 | Provider    | Source          | Type         | Version | Status     |
 |-------------|-----------------|--------------|---------|------------|
 | MangaDex    | mangadex.org    | Official API | 1.0.1   | ✅ Working |
-| ComicK      | comick.io       | Official API | 2.0.0   | Configured API returned HTTP 404 during collection verification |
+| ComicK      | comick.io       | Official API | 2.0.1   | Unavailable in Manga Collection |
 | WeebCentral | weebcentral.com | Scraper      | 1.1.0   | ✅ Working |
 | MangaPill   | mangapill.com   | Scraper      | 4.0.0   | ✅ Working |
 | MangaKatana | mangakatana.com | Scraper      | 1.0.0   | Live smoke check passed; verify in Seanime |
@@ -28,8 +28,10 @@ are not supported. External chapters are omitted because MangaDex does not host 
 API failures are reported as errors so they can be distinguished from empty results.
 
 **ComicK** — Uses the configured ComicK API. Its search endpoint returned HTTP 404
-during collection verification on October 14, 2026. The adapter remains bundled,
-but the collection skips it when its API fails.
+during collection verification on October 14, 2026. A retry on November 12, 2026
+timed out. Collection searches skip
+ComicK. If you previously matched a title to ComicK, use **Manual match** to
+select another source.
 
 **WeebCentral** — HTML scraper. Large library with frequent updates. Good for manhwa
 that may not be on MangaDex.
@@ -55,7 +57,7 @@ Playback inside Seanime has not been verified.
 
 ## Installation
 
-### Manga Collection — all six sources in one extension
+### Manga Collection — five active sources in one extension
 
 1. Open **Seanime** and go to **Settings → Extensions**
 2. Click **Add extension**
@@ -70,8 +72,7 @@ https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/collectio
    source you want, such as `Naruto [MangaKatana]` or `Naruto [Atsumaru]`. Confirm
    the match to use that source for this manga.
 
-You only need to install the collection extension to use all six sources. Every
-search queries them in parallel. Results from different sources stay separate,
+The collection queries its five active sources in parallel. Results from different sources stay separate,
 and chapters and page requests go to the selected source. Original manga titles
 are retained as synonyms for Seanime's automatic matching; use **Manual match**
 to make an explicit source choice or switch sources later.
@@ -101,6 +102,8 @@ https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/mangadex/
 ```
 
 ### ComicK
+
+This standalone adapter is available for testing the configured API. See the provider status above.
 
 ```text
 https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/comick/manifest.json
@@ -132,7 +135,18 @@ https://raw.githubusercontent.com/trashpenguin/seanime-extensions/main/atsumaru/
 
 ---
 
-## Updating
+## Versioned releases and rollback
+
+Open [GitHub Releases](https://github.com/trashpenguin/seanime-extensions/releases)
+and copy the link to `collection-manifest.json` under the version you want.
+Individual providers have their own `<provider>-manifest.json` assets. Paste the
+asset URL into **Add extension**. Each manifest loads the provider code from the
+exact release commit.
+
+To roll back, use the manifest asset from the earlier release. Record your
+current manga matches before removing or replacing an installed extension.
+
+### Updating the main-branch install
 
 When an extension receives a fix, refresh it in Seanime to pull the latest code:
 
@@ -147,7 +161,7 @@ If Refresh doesn't work, remove the extension and re-add it using the same manif
 
 ### Extension failed to load
 
-- Verify the manifest URL points to a raw GitHub file (starts with `raw.githubusercontent.com`)
+- Verify the URL opens a manifest JSON file from GitHub Releases or raw GitHub.
 - Check that `payloadURI` inside the manifest points to the correct `provider.js` raw URL
 
 ### No results when searching
@@ -205,6 +219,17 @@ bundle embeds every adapter, so it runs without fetching or evaluating provider
 code at runtime. When releasing changes, bump `collection/manifest.json` as well
 as any changed individual source's version.
 
+### Release verification in Seanime
+
+1. Install the candidate collection manifest in Seanime.
+2. Use **Manual match** to find a title on MangaKatana and Atsumaru.
+3. Open a chapter from each source and confirm the reader renders images in order.
+4. Record the Seanime version, date, source, title and chapter in the release notes.
+5. Tag the verified commit with a version such as `v1.1.0` to run the release
+   workflow. It tests the checkout and publishes commit-pinned manifest assets.
+6. Install from the published manifest once and repeat the reader check. Keep
+   earlier release assets available for rollback.
+
 ### Seanime Playground
 
 Test a provider directly in Seanime without needing GitHub or a public URL:
@@ -220,14 +245,14 @@ Test a provider directly in Seanime without needing GitHub or a public URL:
 
 ```text
 seanime-extensions/
-├── collection/    # Single installable extension bundling all six sources
+├── collection/    # Single installable extension for five active sources
 ├── mangadex/      # MangaDex provider (official API)
 ├── comick/        # ComicK provider (official API)
 ├── weebcentral/   # WeebCentral provider (scraper)
 ├── mangapill/     # MangaPill provider (scraper)
 ├── mangakatana/   # MangaKatana provider (scraper)
 ├── atsumaru/      # Atsumaru provider (site JSON API)
-├── scripts/       # Collection bundle generator
+├── scripts/       # Collection bundle and release manifest generators
 └── tests/         # Offline provider checks
 ```
 

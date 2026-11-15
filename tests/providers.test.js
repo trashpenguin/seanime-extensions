@@ -122,3 +122,27 @@ test('MangaDex: a later page failure rejects the entire chapter request', async 
     const { provider } = fixtureProvider([{ data: [chapter('one', '1')], total: 2 }, { result: 'error' }])
     await assert.rejects(provider.findChapters('manga'), /unsuccessful response/)
 })
+
+for (const [id, name] of [['comick', 'ComicK'], ['mangapill', 'MangaPill'], ['weebcentral', 'WeebCentral']]) {
+    const operations = [
+        ['search', { query: 'Example' }],
+        ['findChapters', '123'],
+        ['findChapterPages', id === 'mangapill' ? 'https://mangapill.com/chapters/123/example' : '123'],
+    ]
+    test(`${name}: standalone operations surface HTTP and network failures`, async () => {
+        for (const [method, input] of operations) {
+            const httpError = loadProvider(id, async () => ({ ok: false, status: 503 }))
+            await assert.rejects(httpError[method](input), new RegExp(`${name}.*503`))
+            const networkError = loadProvider(id, async () => { throw new Error('connection failed') })
+            await assert.rejects(networkError[method](input), new RegExp(`${name}.*connection failed`))
+        }
+    })
+
+    test(`${name}: empty search results and invalid reader responses stay distinct`, async () => {
+        const empty = loadProvider(id, async () => ({
+            ok: true, json: async () => [], text: async () => '<p>No results</p>',
+        }))
+        assert.equal((await empty.search({ query: 'No such manga' })).length, 0)
+        await assert.rejects(empty.findChapterPages(operations[2][1]), new RegExp(name))
+    })
+}

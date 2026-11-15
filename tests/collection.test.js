@@ -25,7 +25,6 @@ function response(data = {}, body = '', status = 200) {
 
 function emptyResponse(url) {
     if (url.includes('api.mangadex.org')) return response({ data: [] })
-    if (url.includes('api.comick.io')) return response([])
     if (url.includes('atsu.moe')) return response({ hits: [] })
     return response()
 }
@@ -37,21 +36,22 @@ test('Collection: blank searches do not contact any sources', async () => {
     assert.equal(calls.length, 0)
 })
 
-test('Collection: searches all six sources concurrently with source-labelled unique IDs', async () => {
+test('Collection: searches all enabled sources concurrently with source-labelled unique IDs', async () => {
     let release
     const gate = new Promise(resolve => { release = resolve })
     const { provider, calls } = load(async url => {
-        if (calls.length === 6) release()
+        if (calls.length === 5) release()
         await gate
         if (url.includes('api.mangadex.org')) return response({ data: [{ id: 'same', attributes: { title: { en: 'Example' } }, relationships: [] }] })
-        if (url.includes('api.comick.io')) return response([{ slug: 'same', title: 'Example' }, { slug: 'same', title: 'Duplicate' }])
+        if (url.includes('atsu.moe')) return response({ hits: [{ document: { id: 'same', title: 'Example' } }, { document: { id: 'same', title: 'Duplicate' } }] })
         return emptyResponse(url)
     })
     const results = await provider.search({ query: 'Example' })
-    assert.equal(calls.length, 6)
+    assert.equal(calls.length, 5)
+    assert.ok(calls.every(call => !call.url.includes('api.comick.io')))
     assert.equal(results.length, 2)
     assert.equal(results[0].title, 'Example [MangaDex]')
-    assert.equal(results[1].title, 'Example [ComicK]')
+    assert.equal(results[1].title, 'Example [Atsumaru]')
     assert.notEqual(results[0].id, results[1].id)
     assert.equal(results[0].synonyms.includes('Example'), true)
     assert.ok(calls.every(call => call.options.timeout > 0))
@@ -69,7 +69,7 @@ test('Collection: one failed source does not discard successful results', async 
     assert.ok(warnings.some(message => /MangaDex.*429/.test(message)))
 })
 
-test('Collection: network errors swallowed by an individual adapter still remain visible', async () => {
+test('Collection: all enabled sources failing produces an error', async () => {
     const { provider } = load(() => { throw new Error('connection failed') })
     await assert.rejects(provider.search({ query: 'Example' }), /all.*sources.*failed/i)
 })
@@ -126,7 +126,7 @@ test('Collection: unknown sources and malformed IDs fail before contacting sourc
 
 test('Collection: selected-source HTTP failures do not become empty chapter or page lists', async () => {
     const { provider } = load(() => response({}, '', 503))
-    await assert.rejects(provider.findChapters('comick:series'), /ComicK.*503/)
+    await assert.rejects(provider.findChapters('weebcentral:series'), /WeebCentral.*503/)
     await assert.rejects(provider.findChapterPages('mangapill:' + encodeURIComponent('https://mangapill.com/chapters/123/chapter-1')), /MangaPill.*503/)
 })
 
@@ -135,5 +135,12 @@ test('Collection: malformed JSON is not hidden by an individual adapter', async 
         ok: true, status: 200,
         json: async () => { throw new SyntaxError('Invalid JSON response') },
     }))
-    await assert.rejects(provider.findChapters('comick:series'), /ComicK.*Invalid JSON/)
+    await assert.rejects(provider.findChapters('mangadex:series'), /MangaDex.*Invalid JSON/)
+})
+
+test('Collection: saved ComicK IDs report unavailability without a request', async () => {
+    const { provider, calls } = load(() => { throw new Error('No request expected') })
+    await assert.rejects(provider.findChapters('comick:series'), /ComicK is unavailable.*Manual match/)
+    await assert.rejects(provider.findChapterPages('comick:chapter'), /ComicK is unavailable.*Manual match/)
+    assert.equal(calls.length, 0)
 })

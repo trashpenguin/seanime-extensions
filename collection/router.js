@@ -1,4 +1,5 @@
-// Bundled with the six source adapters by scripts/build-collection.js.
+// Bundled with the source adapters by scripts/build-collection.js.
+const UNAVAILABLE_SOURCE = "comick"
 class Provider {
     getSettings() {
         return { supportsMultiLanguage: false, supportsMultiScanlator: false }
@@ -25,48 +26,25 @@ class Provider {
     }
 
     async _runSource(source, method, value) {
-        let requestError
-        // Bind each adapter to a checked fetch. This also captures request failures
-        // in older adapters that catch exceptions and return an empty list.
-        const adapter = source.create(async (url, options) => {
-            try {
-                const response = await fetch(url, { ...options, timeout: 15 })
-                if (!response.ok) throw new Error(`request failed (HTTP ${response.status})`)
-                const read = async method => {
-                    try {
-                        return await response[method]()
-                    } catch (error) {
-                        requestError = error
-                        throw error
-                    }
-                }
-                return {
-                    ...response,
-                    ok: response.ok,
-                    status: response.status,
-                    url: response.url,
-                    json: () => read("json"),
-                    text: () => read("text"),
-                }
-            } catch (error) {
-                requestError = error
-                throw error
-            }
-        })
+        if (source.id === UNAVAILABLE_SOURCE) {
+            throw new Error("ComicK is unavailable. Use Manual match to select another source.")
+        }
+        const adapter = source.create((url, options) => fetch(url, { ...options, timeout: 15 }))
         try {
             const results = await adapter[method](value)
-            if (requestError) throw requestError
             if (!Array.isArray(results)) throw new Error("returned an invalid result list")
             return results
         } catch (error) {
-            throw new Error(`${source.name}: ${error && error.message ? error.message : String(error)}`)
+            const message = error && error.message ? error.message : String(error)
+            throw new Error(message.startsWith(source.name) ? message : `${source.name}: ${message}`)
         }
     }
 
     async search(opts) {
         const query = opts && typeof opts.query === "string" ? opts.query.trim() : ""
         if (!query) return []
-        const batches = await Promise.all(COLLECTION_SOURCES.map(async source => {
+        const activeSources = COLLECTION_SOURCES.filter(source => source.id !== UNAVAILABLE_SOURCE)
+        const batches = await Promise.all(activeSources.map(async source => {
             try {
                 return { source, results: await this._runSource(source, "search", { ...opts, query }) }
             } catch (error) {

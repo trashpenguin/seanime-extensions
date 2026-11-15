@@ -2,7 +2,7 @@
   "id": "mangapill",
   "name": "MangaPill",
   "description": "MangaPill (mangapill.com) - Large free manga library with no bot protection.",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "author": "Custom",
   "type": "manga-provider",
   "language": "javascript",
